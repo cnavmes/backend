@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.*;
+
 @Service
 public class CervezaService {
 
@@ -38,5 +40,26 @@ public class CervezaService {
 
   public List<Cerveza> buscarPorNombre(String nombre) {
     return repository.findByNombreContainingIgnoreCase(nombre);
+  }
+
+  public List<Cerveza> listarOrdenadas(String orden, String direccion) {
+    Sort sort = direccion.equalsIgnoreCase("desc") ? Sort.by(orden).descending() : Sort.by(orden).ascending();
+
+    return repository.findAll(sort);
+  }
+
+  public Page<Cerveza> buscarConFiltros(int page, int size, String orden, String direccion, String estilo,
+      String nombre) {
+    Sort sort = direccion.equalsIgnoreCase("desc") ? Sort.by(orden).descending() : Sort.by(orden).ascending();
+
+    Pageable pageable = PageRequest.of(page, size, sort);
+
+    if (estilo != null) {
+      return repository.findByEstiloIgnoreCase(estilo, pageable);
+    } else if (nombre != null) {
+      return repository.findByNombreContainingIgnoreCase(nombre, pageable);
+    } else {
+      return repository.findAll(pageable);
+    }
   }
 }

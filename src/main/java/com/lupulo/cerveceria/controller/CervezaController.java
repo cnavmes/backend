@@ -1,5 +1,6 @@
 package com.lupulo.cerveceria.controller;
 
+import com.lupulo.cerveceria.dto.CervezaRespuestaDTO;
 import com.lupulo.cerveceria.model.Cerveza;
 import com.lupulo.cerveceria.service.CervezaService;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +9,7 @@ import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
 
 @RestController
 @RequestMapping("/api/cervezas")
@@ -47,17 +49,19 @@ public class CervezaController {
   }
 
   @GetMapping
-  public List<Cerveza> obtenerCervezas(
+  public CervezaRespuestaDTO obtenerCervezas(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "5") int size,
+      @RequestParam(defaultValue = "id") String orden,
+      @RequestParam(defaultValue = "asc") String direccion,
       @RequestParam(required = false) String estilo,
       @RequestParam(required = false) String nombre) {
+    Page<Cerveza> resultado = service.buscarConFiltros(page, size, orden, direccion, estilo, nombre);
 
-    if (estilo != null) {
-      return service.buscarPorEstilo(estilo);
-    } else if (nombre != null) {
-      return service.buscarPorNombre(nombre);
-    } else {
-      return service.listarTodas();
-    }
+    return new CervezaRespuestaDTO(
+        resultado.getContent(),
+        resultado.getNumber(),
+        resultado.getTotalPages(),
+        resultado.getTotalElements());
   }
-
 }
