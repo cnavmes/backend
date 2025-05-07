@@ -62,4 +62,8 @@ public class CervezaService {
       return repository.findAll(pageable);
     }
   }
+
+  public Optional<Cerveza> buscarPorCodigoBarras(String codigoBarras) {
+    return repository.findByCodigoBarras(codigoBarras);
+  }
 }

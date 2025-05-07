@@ -42,4 +42,7 @@ public class Cerveza {
   @NotBlank(message = "La imagen no puede estar vacía")
   private String imagenUrl;
 
+  @NotBlank(message = "El código de barras no puede estar vacío")
+  @Column(unique = true)
+  private String codigoBarras;
 }

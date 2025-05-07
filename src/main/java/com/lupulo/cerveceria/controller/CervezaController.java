@@ -4,12 +4,14 @@ import com.lupulo.cerveceria.dto.CervezaRespuestaDTO;
 import com.lupulo.cerveceria.model.Cerveza;
 import com.lupulo.cerveceria.service.CervezaService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/cervezas")
@@ -55,7 +57,16 @@ public class CervezaController {
       @RequestParam(defaultValue = "id") String orden,
       @RequestParam(defaultValue = "asc") String direccion,
       @RequestParam(required = false) String estilo,
-      @RequestParam(required = false) String nombre) {
+      @RequestParam(required = false) String nombre,
+      @RequestParam(required = false) String codigoBarras) {
+
+    // Si se busca por código de barras, devolver solo esa cerveza (si existe)
+    if (codigoBarras != null) {
+      Optional<Cerveza> cerveza = service.buscarPorCodigoBarras(codigoBarras);
+      List<Cerveza> lista = cerveza.map(List::of).orElse(List.of());
+      return new CervezaRespuestaDTO(lista, 0, 1, lista.size());
+    }
+
     Page<Cerveza> resultado = service.buscarConFiltros(page, size, orden, direccion, estilo, nombre);
 
     return new CervezaRespuestaDTO(
@@ -63,5 +74,13 @@ public class CervezaController {
         resultado.getNumber(),
         resultado.getTotalPages(),
         resultado.getTotalElements());
+  }
+
+  @GetMapping("/barcode/{codigoBarras}")
+  public Cerveza obtenerPorCodigoBarras(@PathVariable String codigoBarras) {
+    return service.buscarPorCodigoBarras(codigoBarras)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "No se encontró ninguna cerveza con el código de barras: " + codigoBarras));
   }
 }
