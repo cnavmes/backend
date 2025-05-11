@@ -25,11 +25,6 @@ public class CervezaController {
     this.service = service;
   }
 
-  // @GetMapping
-  // public List<Cerveza> obtenerTodas() {
-  // return service.listarTodas();
-  // }
-
   @GetMapping("/{id}")
   public Optional<Cerveza> obtenerPorId(@PathVariable Long id) {
     return service.buscarPorId(id);
