@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/cervezas")
@@ -34,17 +35,20 @@ public class CervezaController {
     return service.buscarPorId(id);
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @PostMapping
   public Cerveza crearCerveza(@Valid @RequestBody Cerveza cerveza) {
     return service.guardar(cerveza);
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @PutMapping("/{id}")
   public Cerveza actualizarCerveza(@PathVariable Long id, @Valid @RequestBody Cerveza cerveza) {
     cerveza.setId(id);
     return service.guardar(cerveza);
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @DeleteMapping("/{id}")
   public void eliminarCerveza(@PathVariable Long id) {
     service.eliminar(id);
