@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Venta {
+public class MovimientoStock {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,8 +20,11 @@ public class Venta {
   @JoinColumn(nullable = false)
   private Cerveza cerveza;
 
-  private int cantidad;
+  private int cantidad; // Positiva o negativa
+
+  private String tipo; // "VENTA", "REPOSICION"
 
   private LocalDateTime fecha;
+
   private String usuarioEmail;
 }

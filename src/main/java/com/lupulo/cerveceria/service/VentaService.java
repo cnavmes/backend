@@ -6,8 +6,10 @@ import com.lupulo.cerveceria.model.Venta;
 import com.lupulo.cerveceria.repository.CervezaRepository;
 import com.lupulo.cerveceria.repository.VentaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class VentaService {
@@ -28,6 +30,7 @@ public class VentaService {
       throw new RuntimeException("Stock insuficiente para realizar la venta");
     }
 
+    String email = SecurityContextHolder.getContext().getAuthentication().getName();
     cerveza.setStock(cerveza.getStock() - request.getCantidad());
     cervezaRepository.save(cerveza);
 
@@ -35,8 +38,17 @@ public class VentaService {
         .cerveza(cerveza)
         .cantidad(request.getCantidad())
         .fecha(LocalDateTime.now())
+        .usuarioEmail(email)
         .build();
 
     ventaRepository.save(venta);
+  }
+
+  public List<Venta> listarTodas() {
+    return ventaRepository.findAll();
+  }
+
+  public List<Venta> buscarPorRangoDeFechas(LocalDateTime desde, LocalDateTime hasta) {
+    return ventaRepository.findByFechaBetween(desde, hasta);
   }
 }

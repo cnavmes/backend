@@ -46,6 +46,9 @@ public class AuthController {
 
   @PostMapping("/login")
   public AuthResponse login(@RequestBody AuthRequest request) {
+
+    // Autenticación realizada, variable 'auth' reservada para posibles futuras
+    // implementaciones
     Authentication auth = authManager.authenticate(
         new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
