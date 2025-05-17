@@ -2,19 +2,22 @@ package com.lupulo.cerveceria.service;
 
 import com.lupulo.cerveceria.model.Cerveza;
 import com.lupulo.cerveceria.repository.CervezaRepository;
-import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.*;
+
 @Service
 public class CervezaService {
 
   private final CervezaRepository repository;
+  private final VentaRepository ventaRepository;
 
-  public CervezaService(CervezaRepository repository) {
+  public CervezaService(CervezaRepository repository, VentaRepository ventaRepository) {
     this.repository = repository;
+    this.ventaRepository = ventaRepository;
   }
 
   public List<Cerveza> listarTodas() {
@@ -30,13 +33,24 @@ public class CervezaService {
   }
 
   public void eliminar(Long id) {
+    if (ventaRepository.existsByCervezaId(id)) {
+      throw new IllegalStateException("No se puede eliminar la cerveza porque está asociada a una o más ventas.");
+    }
     repository.deleteById(id);
   }
 
-  public Optional<Cerveza> buscarPorCodigoBarras(String codigoBarras) {
-    return repository.findAll().stream()
-        .filter(c -> c.getCodigoBarras().equalsIgnoreCase(codigoBarras))
-        .findFirst();
+  public List<Cerveza> buscarPorEstilo(String estilo) {
+    return repository.findByEstiloIgnoreCase(estilo);
+  }
+
+  public List<Cerveza> buscarPorNombre(String nombre) {
+    return repository.findByNombreContainingIgnoreCase(nombre);
+  }
+
+  public List<Cerveza> listarOrdenadas(String orden, String direccion) {
+    Sort sort = direccion.equalsIgnoreCase("desc") ? Sort.by(orden).descending() : Sort.by(orden).ascending();
+
+    return repository.findAll(sort);
   }
 
   public Page<Cerveza> buscarConFiltros(
@@ -67,5 +81,19 @@ public class CervezaService {
     List<Cerveza> pageContent = start <= end ? filtradas.subList(start, end) : List.of();
 
     return new PageImpl<>(pageContent, pageable, filtradas.size());
+  }
+
+  public String exportarCSV() {
+    List<Cerveza> cervezas = repository.findAll();
+
+    String encabezados = "ID,Nombre,Estilo,Graduación,País de Origen,Precio,Stock,Descripción,Imagen URL,Código de Barras";
+    String cuerpo = cervezas.stream()
+        .map(c -> String.format("%d,\"%s\",\"%s\",%.2f,\"%s\",%.2f,%d,\"%s\",\"%s\",\"%s\"",
+            c.getId(), c.getNombre(), c.getEstilo(), c.getGraduacion(), c.getPaisOrigen(),
+            c.getPrecio(), c.getStock(), c.getDescripcion().replace("\"", "'"),
+            c.getImagenUrl(), c.getCodigoBarras()))
+        .collect(Collectors.joining("\n"));
+
+    return encabezados + "\n" + cuerpo;
   }
 }

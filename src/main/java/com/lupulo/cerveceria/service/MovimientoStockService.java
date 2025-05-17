@@ -3,18 +3,18 @@ package com.lupulo.cerveceria.service;
 import com.lupulo.cerveceria.dto.*;
 import com.lupulo.cerveceria.model.MovimientoStock;
 import com.lupulo.cerveceria.repository.MovimientoStockRepository;
-import org.springframework.data.domain.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class MovimientoStockService {
 
   private final MovimientoStockRepository movimientoRepository;
 
-  public MovimientoStockService(MovimientoStockRepository movimientoRepository) {
+  public MovimientoStockService(CervezaRepository cervezaRepository, MovimientoStockRepository movimientoRepository) {
+    this.cervezaRepository = cervezaRepository;
     this.movimientoRepository = movimientoRepository;
   }
 
@@ -65,5 +65,4 @@ public class MovimientoStockService {
   public List<MovimientoStock> listarTodos() {
     return movimientoRepository.findAll();
   }
-
 }

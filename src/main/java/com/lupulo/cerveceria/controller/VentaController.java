@@ -3,13 +3,14 @@ package com.lupulo.cerveceria.controller;
 import com.lupulo.cerveceria.dto.VentaRequest;
 import com.lupulo.cerveceria.model.Venta;
 import com.lupulo.cerveceria.service.VentaService;
-import com.lupulo.cerveceria.util.CsvExporter;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,9 +24,11 @@ import org.springframework.http.MediaType;
 public class VentaController {
 
   private final VentaService ventaService;
+  private final CsvExportService csvExportService;
 
-  public VentaController(VentaService ventaService) {
+  public VentaController(VentaService ventaService, CsvExportService csvExportService) {
     this.ventaService = ventaService;
+    this.csvExportService = csvExportService;
   }
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -53,18 +56,5 @@ public class VentaController {
     LocalDateTime hastaFecha = LocalDate.parse(hasta, formatter).atTime(23, 59, 59);
 
     return ventaService.buscarPorRangoDeFechas(desdeFecha, hastaFecha);
-  }
-
-  @PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/exportar")
-  public ResponseEntity<byte[]> exportarVentasCsv() {
-    List<Venta> lista = ventaService.listarTodas(); // Asegúrate de tener este método en el service
-    String contenido = CsvExporter.generarCsvVentas(lista);
-    byte[] datos = contenido.getBytes();
-
-    return ResponseEntity.ok()
-        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ventas.csv")
-        .contentType(MediaType.parseMediaType("text/csv"))
-        .body(datos);
   }
 }

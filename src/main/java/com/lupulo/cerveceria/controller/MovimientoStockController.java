@@ -3,18 +3,9 @@ package com.lupulo.cerveceria.controller;
 import com.lupulo.cerveceria.dto.MovimientoStockRespuestaDTO;
 import com.lupulo.cerveceria.model.MovimientoStock;
 import com.lupulo.cerveceria.service.MovimientoStockService;
-import com.lupulo.cerveceria.util.CsvExporter;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/api/movimientos")
@@ -45,15 +36,22 @@ public class MovimientoStockController {
   }
 
   @PreAuthorize("hasRole('ADMIN')")
+  @PostMapping("/reponer/{cervezaId}")
+  public ResponseEntity<String> reponer(@PathVariable Long cervezaId, @RequestBody ReponerStockRequest request) {
+    service.reponerStock(cervezaId, request);
+    return ResponseEntity.ok("Stock repuesto correctamente");
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/exportar")
-  public ResponseEntity<byte[]> exportarMovimientosCsv() {
-    List<MovimientoStock> lista = service.listarTodos(); // CORREGIDO: usamos el nombre correcto del atributo
-    String contenido = CsvExporter.generarCsvMovimientos(lista);
-    byte[] datos = contenido.getBytes();
+  public ResponseEntity<Resource> exportarCSV() {
+    String contenido = service.exportarCSV();
+    ByteArrayResource resource = new ByteArrayResource(contenido.getBytes(StandardCharsets.UTF_8));
 
     return ResponseEntity.ok()
-        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=movimientos_stock.csv")
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"movimientos_stock.csv\"")
         .contentType(MediaType.parseMediaType("text/csv"))
-        .body(datos);
+        .contentLength(resource.contentLength())
+        .body(resource);
   }
 }
