@@ -1,11 +1,22 @@
 package com.lupulo.cerveceria.controller;
 
 import com.lupulo.cerveceria.dto.MovimientoStockRespuestaDTO;
-import com.lupulo.cerveceria.model.MovimientoStock;
+
 import com.lupulo.cerveceria.service.MovimientoStockService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.lupulo.cerveceria.dto.ReponerStockRequest;
+
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
+import java.nio.charset.StandardCharsets;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/movimientos")

@@ -2,10 +2,13 @@ package com.lupulo.cerveceria.service;
 
 import com.lupulo.cerveceria.model.Cerveza;
 import com.lupulo.cerveceria.repository.CervezaRepository;
+import com.lupulo.cerveceria.repository.VentaRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.*;
 
@@ -95,5 +98,9 @@ public class CervezaService {
         .collect(Collectors.joining("\n"));
 
     return encabezados + "\n" + cuerpo;
+  }
+
+  public Optional<Cerveza> buscarPorCodigoBarras(String codigoBarras) {
+    return repository.findByCodigoBarras(codigoBarras);
   }
 }
