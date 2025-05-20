@@ -34,15 +34,13 @@ public class AuthController {
 
   @PostMapping("/register")
   public AuthResponse register(@RequestBody RegisterRequest request) {
-    String passwordCifrada = passwordEncoder.encode(request.getPassword());
-
     Usuario usuario = Usuario.builder()
         .email(request.getEmail())
-        .password(passwordCifrada)
+        .password(request.getPassword()) // ✅ Le pasas la contraseña en texto plano
         .rol(request.getRol())
         .build();
 
-    usuarioService.registrarUsuario(usuario);
+    usuarioService.registrarUsuario(usuario); // ✅ Aquí se cifra internamente
 
     String jwt = jwtService.generateToken(
         Map.of("rol", usuario.getRol().name()),
@@ -53,8 +51,13 @@ public class AuthController {
 
   @PostMapping("/login")
   public AuthResponse login(@RequestBody AuthRequest request) {
-    authManager.authenticate(
-        new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+    try {
+      authManager.authenticate(
+          new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+    } catch (Exception e) {
+      System.out.println("❌ Error autenticando: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+      throw e;
+    }
 
     Usuario usuario = usuarioService.buscarPorEmail(request.getEmail()).orElseThrow();
 
